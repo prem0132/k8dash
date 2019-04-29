@@ -20,7 +20,7 @@ import PodCpuChart from "../components/podCpuChart";
 import PodRamChart from "../components/podRamChart";
 import ChartsContainer from "../components/chartsContainer";
 
-const service = api.pod;
+const service = api.sparkapplication;
 
 export default class Pod extends Base {
   componentDidMount() {
@@ -42,11 +42,14 @@ export default class Pod extends Base {
     const errors = getErrors(item);
     const filteredEvents = filterByOwner(events, item);
     const filteredMetrics = getMetrics(item && [item], metrics && [metrics]);
-
     return (
       <div id="content">
-        <ItemHeader title={["Pod", namespace, name]} ready={!!item}>
+        <ItemHeader
+          title={["Spark Application", namespace, name]}
+          ready={!!item}
+        >
           <>
+            {/*  
             <a
               title="Logs"
               className="button_headerAction"
@@ -64,7 +67,7 @@ export default class Pod extends Base {
               <ExecSvg />
               <span className="button_label">Exec</span>
             </a>
-
+*/}
             <SaveButton item={item} onSave={x => service.put(x)} />
 
             <DeleteButton onDelete={() => service.delete(namespace, name)} />
@@ -96,6 +99,12 @@ export default class Pod extends Base {
                     </a>
                   </div>
                 ))}
+              </Field>
+              <Field name="Type">{item.spec.type}</Field>
+              <Field name="Mode">{item.spec.mode}</Field>
+              <Field name="Main Class">{item.spec.mainClass}</Field>
+              <Field name="MainApplicationFile">
+                {item.spec.mainApplicationFile}
               </Field>
               <Field name="Host IP">{item.status.hostIP}</Field>
               <Field name="Pod IP">{item.status.podIP}</Field>

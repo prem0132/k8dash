@@ -31,6 +31,7 @@ const apis = {
     job: apiFactoryWithNamespace('/apis/batch/v1', 'jobs'),
     persistentVolumeClaim: apiFactoryWithNamespace('/api/v1', 'persistentvolumeclaims'),
     pod: apiFactoryWithNamespace('/api/v1', 'pods'),
+    sparkapplication: apiFactoryWithNamespace('apis/sparkoperator.k8s.io/v1beta1', 'sparkapplications'),
     replicaSet: apiFactoryWithNamespace('/apis/apps/v1', 'replicasets', true),
     role: apiFactoryWithNamespace('/apis/rbac.authorization.k8s.io/v1', 'roles'),
     secret: apiFactoryWithNamespace('/api/v1', 'secrets'),
