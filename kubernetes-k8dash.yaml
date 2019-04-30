@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: k8dash
-        image: herbrandson/k8dash:latest
+        image: premhashmap/spark-dashboard:0.0.1
         ports:
         - containerPort: 4654
         livenessProbe:
