@@ -1,3 +1,4 @@
+import {getToken, logout} from './auth';
 import log from '../utils/log';
 
 const {host, href, hash, search} = window.location;
@@ -5,32 +6,7 @@ const nonHashedUrl = href.replace(hash, '').replace(search, '');
 const isDev = process.env.NODE_ENV !== 'production';
 const BASE_HTTP_URL = isDev && host === 'localhost:4653' ? 'http://localhost:4654' : nonHashedUrl;
 const BASE_WS_URL = BASE_HTTP_URL.replace('http', 'ws');
-
-export function getToken() {
-    return localStorage.authToken;
-}
-
-export function getUserInfo() {
-    const user = getToken().split('.')[1];
-    return JSON.parse(atob(user));
-}
-
-export function hasToken() {
-    return !!getToken();
-}
-
-export function setToken(token) {
-    localStorage.authToken = token;
-}
-
-export function deleteToken() {
-    delete localStorage.authToken;
-}
-
-export function logout() {
-    deleteToken();
-    window.location.reload();
-}
+const JSON_HEADERS = {Accept: 'application/json', 'Content-Type': 'application/json'};
 
 export async function request(path, params, autoLogoutOnAuthError = true) {
     const opts = Object.assign({headers: {}}, params);
@@ -43,7 +19,7 @@ export async function request(path, params, autoLogoutOnAuthError = true) {
 
     if (!response.ok) {
         const {status, statusText} = response;
-        if (autoLogoutOnAuthError && (status === 401 || status === 403)) {
+        if (autoLogoutOnAuthError && status === 401 && token) {
             log.error('Logging out due to auth error', {status, statusText, path});
             logout();
         }
@@ -64,7 +40,74 @@ export async function request(path, params, autoLogoutOnAuthError = true) {
     return response.json();
 }
 
-export async function streamResult(url, name, cb) {
+export function apiFactory(group, version, resource) {
+    const apiRoot = getApiRoot(group, version);
+    const url = `${apiRoot}/${resource}`;
+    return {
+        resource: {group, resource},
+        list: (cb, errCb) => streamResults(url, cb, errCb),
+        get: (name, cb, errCb) => streamResult(url, name, cb, errCb),
+        post: body => post(url, body),
+        put: body => put(`${url}/${body.metadata.name}`, body),
+        delete: name => remove(`${url}/${name}`),
+    };
+}
+
+export function apiFactoryWithNamespace(group, version, resource, includeScale) {
+    const apiRoot = getApiRoot(group, version);
+    const results = {
+        resource: {group, resource},
+        list: (namespace, cb, errCb) => streamResults(url(namespace), cb, errCb),
+        get: (namespace, name, cb, errCb) => streamResult(url(namespace), name, cb, errCb),
+        post: body => post(url(body.metadata.namespace), body),
+        put: body => put(`${url(body.metadata.namespace)}/${body.metadata.name}`, body),
+        delete: (namespace, name) => remove(`${url(namespace)}/${name}`),
+    };
+
+    if (includeScale) {
+        results.scale = apiScaleFactory(apiRoot, resource);
+    }
+
+    return results;
+
+    function url(namespace) {
+        return namespace ? `${apiRoot}/namespaces/${namespace}/${resource}` : `${apiRoot}/${resource}`;
+    }
+}
+
+function getApiRoot(group, version) {
+    return group ? `/apis/${group}/${version}` : `api/${version}`;
+}
+
+function apiScaleFactory(apiRoot, resource) {
+    return {
+        get: (namespace, name) => request(url(namespace, name)),
+        put: body => put(url(body.metadata.namespace, body.metadata.name), body),
+    };
+
+    function url(namespace, name) {
+        return `${apiRoot}/namespaces/${namespace}/${resource}/${name}/scale`;
+    }
+}
+
+export function post(url, json, autoLogoutOnAuthError = true) {
+    const body = JSON.stringify(json);
+    const opts = {method: 'POST', body, headers: JSON_HEADERS};
+    return request(url, opts, autoLogoutOnAuthError);
+}
+
+export function put(url, json, autoLogoutOnAuthError = true) {
+    const body = JSON.stringify(json);
+    const opts = {method: 'PUT', body, headers: JSON_HEADERS};
+    return request(url, opts, autoLogoutOnAuthError);
+}
+
+export function remove(url) {
+    const opts = {method: 'DELETE', headers: JSON_HEADERS};
+    return request(url, opts);
+}
+
+export async function streamResult(url, name, cb, errCb) {
     let isCancelled = false;
     let socket;
     run();
@@ -81,9 +124,10 @@ export async function streamResult(url, name, cb) {
             const fieldSelector = encodeURIComponent(`metadata.name=${name}`);
             const watchUrl = `${url}?watch=1&fieldSelector=${fieldSelector}`;
 
-            socket = stream(watchUrl, x => cb(x.object));
+            socket = stream(watchUrl, x => cb(x.object), {isJson: true});
         } catch (err) {
             log.error('Error in api request', {err, url});
+            if (errCb) errCb(err);
         }
     }
 
@@ -95,7 +139,7 @@ export async function streamResult(url, name, cb) {
     }
 }
 
-export async function streamResults(url, cb) {
+export async function streamResults(url, cb, errCb) {
     const results = {};
     let isCancelled = false;
     let socket;
@@ -111,9 +155,10 @@ export async function streamResults(url, cb) {
             add(items, kind);
 
             const watchUrl = `${url}?watch=1&resourceVersion=${metadata.resourceVersion}`;
-            socket = stream(watchUrl, update);
+            socket = stream(watchUrl, update, {isJson: true});
         } catch (err) {
             log.error('Error in api request', {err, url});
+            if (errCb) errCb(err);
         }
     }
 
@@ -175,9 +220,10 @@ export async function streamResults(url, cb) {
     }
 }
 
-export function stream(url, cb, isJson = true, additionalProtocols) {
+export function stream(url, cb, args) {
     let connection;
     let isCancelled;
+    const {isJson, additionalProtocols, connectCb} = args;
 
     connect();
 
@@ -193,6 +239,7 @@ export function stream(url, cb, isJson = true, additionalProtocols) {
     }
 
     function connect() {
+        if (connectCb) connectCb();
         connection = connectStream(url, cb, onFail, isJson, additionalProtocols);
     }
 
