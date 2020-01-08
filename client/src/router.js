@@ -42,6 +42,10 @@ import StatefulSet from './views/statefulSet';
 import StorageClass from './views/storageClass';
 import StorageClasses from './views/storageClasses';
 import Workloads from './views/workloads';
+import Jobs from './views/jobs';
+import Knerrir from './views/knerrir';
+import ScheduledKnerrir from './views/scheduledKnerrir';
+import Knorr from './views/knorr';
 
 const routes = [];
 let handler;
@@ -86,6 +90,10 @@ registerRoute('workload/daemonset/:namespace/:name', params => <DaemonSet {...pa
 registerRoute('workload/deployment/:namespace/:name', params => <Deployment {...params} />);
 registerRoute('workload/job/:namespace/:name', params => <Job {...params} />);
 registerRoute('workload/statefulset/:namespace/:name', params => <StatefulSet {...params} />);
+registerRoute('jobs', () => <Jobs />);
+registerRoute('knerrir', () => <Knerrir />);
+registerRoute('scheduledKnerrir', () => <ScheduledKnerrir />);
+registerRoute('knorr', () => <Knorr />);
 
 window.addEventListener('hashchange', onNavigate);
 

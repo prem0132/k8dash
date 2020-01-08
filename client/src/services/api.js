@@ -23,6 +23,8 @@ const daemonSet = apiFactoryWithNamespace('apps', 'v1', 'daemonsets');
 const deployment = apiFactoryWithNamespace('apps', 'v1', 'deployments', true);
 const replicaSet = apiFactoryWithNamespace('apps', 'v1', 'replicasets', true);
 const statefulSet = apiFactoryWithNamespace('apps', 'v1', 'statefulsets', true);
+const knerrir = apiFactoryWithNamespace('knerrir.hashmapinc.com', 'v1alpha1', 'knerrir', true);
+const scheduledKnerrir = apiFactoryWithNamespace('knerrir.hashmapinc.com', 'v1alpha1', 'scheduledknorr', true);
 
 const cronJob = apiFactoryWithNamespace('batch', 'v1beta1', 'cronjobs');
 const job = apiFactoryWithNamespace('batch', 'v1', 'jobs');
@@ -63,6 +65,8 @@ const apis = {
     serviceAccount,
     statefulSet,
     roleBinding,
+    knerrir,
+    scheduledKnerrir,
 };
 
 async function testAuth() {

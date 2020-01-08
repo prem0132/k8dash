@@ -46,6 +46,22 @@ export default class Menu extends Base {
                         )}
                     </Group>
 
+                    {/* Knerrir */}
+                    <Group>
+                        {canView(rules, api.deployment) && (
+                            <MenuItem title='Jobs' path='jobs' resource='Jobs' onClick={onClick} />
+                        )}                        
+                        {canView(rules, api.knerrir) && (
+                            <MenuItem title='Knerrir' path='knerrir' resource='Knerrir' onClick={onClick} />
+                        )}
+                        {canView(rules, api.scheduledKnerrir) && (
+                            <MenuItem title='Scheduled' path='scheduledKnerrir' resource='ScheduledKnerrir' onClick={onClick} />
+                        )}
+                        {canView(rules, api.knerrir) && (
+                            <MenuItem title='Knorr' path='knorr' resource='Knorr' onClick={onClick} />
+                        )}                                                
+                    </Group>                    
+
                     {/* Workloads */}
                     <Group>
                         {canView(rules, api.deployment) && (
