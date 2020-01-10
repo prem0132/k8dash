@@ -42,10 +42,12 @@ import StatefulSet from './views/statefulSet';
 import StorageClass from './views/storageClass';
 import StorageClasses from './views/storageClasses';
 import Workloads from './views/workloads';
-import Jobs from './views/jobs';
+import Tasks from './views/tasks';
 import Knerrir from './views/knerrir';
+import Knerrirs from './views/knerrirs';
 import ScheduledKnerrir from './views/scheduledKnerrir';
-import Knorr from './views/knorr';
+import ScheduledKnerrirs from './views/scheduledKnerrirs';
+import Knorr from './views/knorrs';
 
 const routes = [];
 let handler;
@@ -90,9 +92,13 @@ registerRoute('workload/daemonset/:namespace/:name', params => <DaemonSet {...pa
 registerRoute('workload/deployment/:namespace/:name', params => <Deployment {...params} />);
 registerRoute('workload/job/:namespace/:name', params => <Job {...params} />);
 registerRoute('workload/statefulset/:namespace/:name', params => <StatefulSet {...params} />);
-registerRoute('jobs', () => <Jobs />);
-registerRoute('knerrir', () => <Knerrir />);
-registerRoute('scheduledKnerrir', () => <ScheduledKnerrir />);
+registerRoute('tasks', () => <Tasks />);
+registerRoute('tasks/cronjob/:namespace/:name', params => <CronJob {...params} />);
+registerRoute('tasks/job/:namespace/:name', params => <Job {...params} />);
+registerRoute('tasks/knorr/:namespace/:name', params => <Knerrir {...params} />);
+registerRoute('tasks/scheduledknorr/:namespace/:name', params => <ScheduledKnerrir {...params} />);
+registerRoute('knerrir', () => <Knerrirs />);
+registerRoute('scheduledKnerrir', () => <ScheduledKnerrirs />);
 registerRoute('knorr', () => <Knorr />);
 
 window.addEventListener('hashchange', onNavigate);

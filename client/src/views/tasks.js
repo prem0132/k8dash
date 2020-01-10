@@ -4,14 +4,14 @@ import Base from '../components/base';
 import Chart from '../components/chart';
 import Filter from '../components/filter';
 import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
-import Sorter, {defaultSortInfo} from '../components/sorter';
+import {defaultSortInfo} from '../components/sorter';
 import api from '../services/api';
 import test from '../utils/filterHelper';
-import Working from '../components/working';
+// import Working from '../components/working';
 import LoadingChart from '../components/loadingChart';
 import ChartsContainer from '../components/chartsContainer';
 
-export default class Knorr extends Base {
+export default class Tasks extends Base {
     state = {
         filter: '',
         sort: defaultSortInfo(this),
@@ -20,20 +20,14 @@ export default class Knorr extends Base {
     setNamespace(namespace) {
         this.setState({
             cronJobs: null,
-            daemonSets: null,
-            deployments: null,
             jobs: null,
-            statefulSets: null,
             knerrir: null,
             scheduledKnerrir: null,
         });
 
         this.registerApi({
             cronJobs: api.cronJob.list(namespace, x => this.setState({cronJobs: x})),
-            daemonSets: api.daemonSet.list(namespace, x => this.setState({daemonSets: x})),
-            deployments: api.deployment.list(namespace, x => this.setState({deployments: x})),
             jobs: api.job.list(namespace, x => this.setState({jobs: x})),
-            statefulSets: api.statefulSet.list(namespace, x => this.setState({statefulSets: x})),
             knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
             scheduledKnerrir: api.scheduledKnerrir.list(namespace, x => this.setState({scheduledKnerrir: x})),
         });
@@ -44,15 +38,15 @@ export default class Knorr extends Base {
     }
 
     render() {
-        const {cronJobs, daemonSets, deployments, jobs, statefulSets, knerrir, scheduledKnerrir, sort, filter} = this.state;
-        const items = [cronJobs, daemonSets, deployments, jobs, statefulSets, scheduledKnerrir, knerrir];
+        const {cronJobs, jobs, knerrir, scheduledKnerrir, sort, filter} = this.state;
+        const items = [cronJobs, jobs, knerrir, scheduledKnerrir];
 
         const filtered = filterControllers(filter, items);
 
         return (
             <div id='content'>
                 <Filter
-                    text='Workloads'
+                    text='Tasks'
                     filter={filter}
                     onChange={x => this.setState({filter: x})}
                     onNamespaceChange={x => this.setNamespace(x)}
@@ -65,23 +59,28 @@ export default class Knorr extends Base {
 
                 <div className='contentPanel'>
                     <table>
-                        <thead>
+                        {/* <thead>
                             <tr>
                                 <MetadataHeaders includeNamespace={true} sort={sort}/>
                                 <th><Sorter field={getExpectedCount} sort={sort}>Pods</Sorter></th>
                             </tr>
-                        </thead>
+                        </thead> */}
+                        <thead>
+                            <tr>
+                                <MetadataHeaders sort={sort} includeNamespace={true} />
+                            </tr>
+                        </thead>                        
 
                         <TableBody items={filtered} filter={filter} sort={sort} colSpan='5' row={x => (
                             <tr key={x.metadata.uid}>
                                 <MetadataColumns
                                     item={x}
                                     includeNamespace={true}
-                                    href={`#!workload/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                    href={`#!tasks/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                                 />
-                                <td>
+                                {/* <td>
                                     <Status item={x} />
-                                </td>
+                                </td> */}
                             </tr>
                         )} />
                     </table>
@@ -108,7 +107,7 @@ function ControllerStatusChart({items}) {
             ) : (
                 <LoadingChart />
             )}
-            <div className='charts_itemLabel'>Workloads</div>
+            <div className='charts_itemLabel'>Tasks</div>
             <div className='charts_itemSubLabel'>Ready vs Requested</div>
         </div>
     );
@@ -131,21 +130,21 @@ function PodStatusChart({items}) {
     );
 }
 
-function Status({item}) {
-    const current = getCurrentCount(item);
-    const expected = getExpectedCount(item);
-    const text = `${current} / ${expected}`;
+// function Status({item}) {
+//     const current = getCurrentCount(item);
+//     const expected = getExpectedCount(item);
+//     const text = `${current} / ${expected}`;
 
-    if (current === expected) return <span>{text}</span>;
-    return <Working className='contentPanel_warn' text={text} />;
-}
+//     if (current === expected) return <span>{text}</span>;
+//     return <Working className='contentPanel_warn' text={text} />;
+// }
 
 function getCurrentCount({status}) {
-    return status.readyReplicas || status.numberReady || 0;
+    return 1;
 }
 
 function getExpectedCount({spec, status}) {
-    return spec.replicas || status.currentNumberScheduled || 0;
+    return 1;
 }
 
 function filterControllers(filter, items) {

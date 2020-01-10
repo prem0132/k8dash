@@ -11,7 +11,7 @@ import Working from '../components/working';
 import LoadingChart from '../components/loadingChart';
 import ChartsContainer from '../components/chartsContainer';
 
-export default class Jobs extends Base {
+export default class ScheduledKnerrir extends Base {
     state = {
         filter: '',
         sort: defaultSortInfo(this),
@@ -19,22 +19,10 @@ export default class Jobs extends Base {
 
     setNamespace(namespace) {
         this.setState({
-            cronJobs: null,
-            daemonSets: null,
-            deployments: null,
-            jobs: null,
-            statefulSets: null,
-            knerrir: null,
             scheduledKnerrir: null,
         });
 
         this.registerApi({
-            cronJobs: api.cronJob.list(namespace, x => this.setState({cronJobs: x})),
-            daemonSets: api.daemonSet.list(namespace, x => this.setState({daemonSets: x})),
-            deployments: api.deployment.list(namespace, x => this.setState({deployments: x})),
-            jobs: api.job.list(namespace, x => this.setState({jobs: x})),
-            statefulSets: api.statefulSet.list(namespace, x => this.setState({statefulSets: x})),
-            knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
             scheduledKnerrir: api.scheduledKnerrir.list(namespace, x => this.setState({scheduledKnerrir: x})),
         });
     }
@@ -44,15 +32,15 @@ export default class Jobs extends Base {
     }
 
     render() {
-        const {cronJobs, daemonSets, deployments, jobs, statefulSets, knerrir, scheduledKnerrir, sort, filter} = this.state;
-        const items = [cronJobs, daemonSets, deployments, jobs, statefulSets, scheduledKnerrir, knerrir];
+        const {scheduledKnerrir, sort, filter} = this.state;
+        const items = [scheduledKnerrir];
 
         const filtered = filterControllers(filter, items);
 
         return (
             <div id='content'>
                 <Filter
-                    text='Workloads'
+                    text='ScheduledKnerrirs'
                     filter={filter}
                     onChange={x => this.setState({filter: x})}
                     onNamespaceChange={x => this.setNamespace(x)}
@@ -77,7 +65,7 @@ export default class Jobs extends Base {
                                 <MetadataColumns
                                     item={x}
                                     includeNamespace={true}
-                                    href={`#!workload/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                    href={`#!tasks/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                                 />
                                 <td>
                                     <Status item={x} />
@@ -141,11 +129,11 @@ function Status({item}) {
 }
 
 function getCurrentCount({status}) {
-    return status.readyReplicas || status.numberReady || 0;
+    return 1;
 }
 
 function getExpectedCount({spec, status}) {
-    return spec.replicas || status.currentNumberScheduled || 0;
+    return 1;
 }
 
 function filterControllers(filter, items) {

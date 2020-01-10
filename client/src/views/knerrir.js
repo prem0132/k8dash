@@ -1,162 +1,105 @@
-import _ from 'lodash';
 import React from 'react';
 import Base from '../components/base';
-import Chart from '../components/chart';
-import Filter from '../components/filter';
-import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
-import Sorter, {defaultSortInfo} from '../components/sorter';
+import ContainersPanel from '../components/containersPanel';
+import PodCpuChart from '../components/podCpuChart';
+import DeleteButton from '../components/deleteButton';
+import EventsPanel from '../components/eventsPanel';
+import Field from '../components/field';
+import ItemHeader from '../components/itemHeader';
+import Loading from '../components/loading';
+import MetadataFields from '../components/metadataFields';
+import PodsPanel from '../components/podsPanel';
+import PodRamChart from '../components/podRamChart';
+import SaveButton from '../components/saveButton';
 import api from '../services/api';
-import test from '../utils/filterHelper';
-import Working from '../components/working';
-import LoadingChart from '../components/loadingChart';
+import getMetrics from '../utils/metricsHelpers';
+import {filterByOwner} from '../utils/filterHelper';
+import {defaultSortInfo} from '../components/sorter';
 import ChartsContainer from '../components/chartsContainer';
+
+const service = api.job;
 
 export default class Knerrir extends Base {
     state = {
-        filter: '',
-        sort: defaultSortInfo(this),
-    };
-
-    setNamespace(namespace) {
-        this.setState({
-            cronJobs: null,
-            daemonSets: null,
-            deployments: null,
-            jobs: null,
-            statefulSets: null,
-            knerrir: null,
-        });
-
-        this.registerApi({
-            cronJobs: api.cronJob.list(namespace, x => this.setState({cronJobs: x})),
-            daemonSets: api.daemonSet.list(namespace, x => this.setState({daemonSets: x})),
-            deployments: api.deployment.list(namespace, x => this.setState({deployments: x})),
-            jobs: api.job.list(namespace, x => this.setState({jobs: x})),
-            statefulSets: api.statefulSet.list(namespace, x => this.setState({statefulSets: x})),
-            knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
-        });
+        podsSort: defaultSortInfo(x => this.setState({podsSort: x})),
+        eventsSort: defaultSortInfo(x => this.setState({eventsSort: x})),
     }
 
-    sort(sortBy, sortDirection) {
-        this.setState({sortBy, sortDirection});
+    componentDidMount() {
+        const {namespace, name} = this.props;
+
+        this.registerApi({
+            item: service.get(namespace, name, item => this.setState({item})),
+            pods: api.pod.list(namespace, pods => this.setState({pods})),
+            events: api.event.list(namespace, events => this.setState({events})),
+            metrics: api.metrics.pods(namespace, metrics => this.setState({metrics})),
+        });
     }
 
     render() {
-        const {cronJobs, daemonSets, deployments, jobs, statefulSets, knerrir, sort, filter} = this.state;
-        const items = [cronJobs, daemonSets, deployments, jobs, statefulSets, knerrir];
+        const {namespace, name} = this.props;
+        const {item, pods, events, metrics, podsSort, eventsSort} = this.state;
 
-        const filtered = filterControllers(filter, items);
+        const filteredPods = filterByOwner(pods, item);
+        const filteredEvents = filterByOwner(events, item);
+        const filteredMetrics = getMetrics(filteredPods, metrics);
 
         return (
             <div id='content'>
-                <Filter
-                    text='Workloads'
-                    filter={filter}
-                    onChange={x => this.setState({filter: x})}
-                    onNamespaceChange={x => this.setNamespace(x)}
-                />
+                <ItemHeader title={['Knerrir', namespace, name]} ready={!!item}>
+                    <>
+                        <SaveButton
+                            item={item}
+                            onSave={x => service.put(x)}
+                        />
+
+                        <DeleteButton
+                            onDelete={() => service.delete(namespace, name)}
+                        />
+                    </>
+                </ItemHeader>
+
 
                 <ChartsContainer>
-                    <ControllerStatusChart items={filtered} />
-                    <PodStatusChart items={filtered} />
+                    <div className='charts_item'>
+                        <div className='charts_number'>
+                            {item && (item.status.active || 0)}
+                            <span> / </span>
+                            {item && (item.status.succeeded || 0)}
+                        </div>
+                        <div className='charts_itemLabel'>Active / Succeeded</div>
+                    </div>
+                    <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
+                    <PodRamChart items={filteredPods} metrics={filteredMetrics} />
                 </ChartsContainer>
 
                 <div className='contentPanel'>
-                    <table>
-                        <thead>
-                            <tr>
-                                <MetadataHeaders includeNamespace={true} sort={sort}/>
-                                <th><Sorter field={getExpectedCount} sort={sort}>Pods</Sorter></th>
-                            </tr>
-                        </thead>
-
-                        <TableBody items={filtered} filter={filter} sort={sort} colSpan='5' row={x => (
-                            <tr key={x.metadata.uid}>
-                                <MetadataColumns
-                                    item={x}
-                                    includeNamespace={true}
-                                    href={`#!workload/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
-                                />
-                                <td>
-                                    <Status item={x} />
-                                </td>
-                            </tr>
-                        )} />
-                    </table>
+                    {!item ? <Loading /> : (
+                        <div>
+                            <MetadataFields item={item} />
+                            <Field name='Start Time' value={item.status.startTime} />
+                            <Field name='Completion Time' value={item.status.completionTime} />
+                        </div>
+                    )}
                 </div>
+
+                <ContainersPanel spec={item && item.spec.template.spec} />
+
+                <div className='contentPanel_header'>Pods</div>
+                <PodsPanel
+                    items={filteredPods}
+                    sort={podsSort}
+                    metrics={filteredMetrics}
+                    skipNamespace={true}
+                />
+
+                <div className='contentPanel_header'>Events</div>
+                <EventsPanel
+                    shortList={true}
+                    sort={eventsSort}
+                    items={filteredEvents}
+                />
             </div>
         );
     }
-}
-
-function ControllerStatusChart({items}) {
-    const workingItems = _.filter(items, (item) => {
-        const current = getCurrentCount(item);
-        const expected = getExpectedCount(item);
-        return current !== expected;
-    });
-
-    const count = items && items.length;
-    const pending = workingItems.length;
-
-    return (
-        <div className='charts_item'>
-            {items ? (
-                <Chart used={count - pending} pending={pending} available={count} />
-            ) : (
-                <LoadingChart />
-            )}
-            <div className='charts_itemLabel'>Workloads</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
-        </div>
-    );
-}
-
-function PodStatusChart({items}) {
-    const current = _.sumBy(items, getCurrentCount);
-    const expected = _.sumBy(items, getExpectedCount);
-
-    return (
-        <div className='charts_item'>
-            {items ? (
-                <Chart used={current} pending={expected - current} available={expected} />
-            ) : (
-                <LoadingChart />
-            )}
-            <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
-        </div>
-    );
-}
-
-function Status({item}) {
-    const current = getCurrentCount(item);
-    const expected = getExpectedCount(item);
-    const text = `${current} / ${expected}`;
-
-    if (current === expected) return <span>{text}</span>;
-    return <Working className='contentPanel_warn' text={text} />;
-}
-
-function getCurrentCount({status}) {
-    return status.readyReplicas || status.numberReady || 0;
-}
-
-function getExpectedCount({spec, status}) {
-    return spec.replicas || status.currentNumberScheduled || 0;
-}
-
-function filterControllers(filter, items) {
-    const results = items
-        .flat()
-        .filter(x => !!x);
-
-    // If there are no results yet but some of the workload types are still
-    // loading, return "null" so we display the "loading" control
-    if (!results.length && items.some(x => !x)) return null;
-
-    return _(results)
-        .flatten()
-        .filter(x => test(filter, x.metadata.name))
-        .value();
 }
