@@ -9,15 +9,16 @@ import ItemHeader from '../components/itemHeader';
 import Loading from '../components/loading';
 import MetadataFields from '../components/metadataFields';
 import PodsPanel from '../components/podsPanel';
+import KnerrirPanel from '../components/knerrirPanel';
 import PodRamChart from '../components/podRamChart';
 import SaveButton from '../components/saveButton';
 import api from '../services/api';
 import getMetrics from '../utils/metricsHelpers';
-import {filterByOwner} from '../utils/filterHelper';
+import {filterByOwner, filterByOwners} from '../utils/filterHelper';
 import {defaultSortInfo} from '../components/sorter';
 import ChartsContainer from '../components/chartsContainer';
 
-const service = api.cronJob;
+const service = api.scheduledKnerrir;
 
 export default class ScheduledKnerrir extends Base {
     state = {
@@ -31,6 +32,7 @@ export default class ScheduledKnerrir extends Base {
         this.registerApi({
             item: service.get(namespace, name, item => this.setState({item})),
             pods: api.pod.list(namespace, pods => this.setState({pods})),
+            knerrirs: api.knerrir.list(namespace, knerrir => this.setState({knerrir})),
             events: api.event.list(namespace, events => this.setState({events})),
             metrics: api.metrics.pods(namespace, metrics => this.setState({metrics})),
         });
@@ -38,10 +40,11 @@ export default class ScheduledKnerrir extends Base {
 
     render() {
         const {namespace, name} = this.props;
-        const {item, pods, events, metrics, podsSort, eventsSort} = this.state;
+        const {item, pods, knerrir, events, metrics, podsSort, eventsSort} = this.state;
 
-        const filteredPods = filterByOwner(pods, item);
-        const filteredEvents = filterByOwner(events, item);
+        const filteredKnerrirs = filterByOwner(knerrir, item);
+        const filteredPods = filterByOwners(pods, filteredKnerrirs);
+        const filteredEvents = filterByOwners(events, filteredPods);
         const filteredMetrics = getMetrics(filteredPods, metrics);
 
         return (
@@ -61,7 +64,7 @@ export default class ScheduledKnerrir extends Base {
 
                 <ChartsContainer>
                     <div className='charts_item'>
-                        <div className='charts_number'>{(item && item.status.active) ? item.status.active.length : 0}</div>
+                        <div className='charts_number'>{(item && item.status.pastFailedRunNames.length ) ? item.status.pastFailedRunNames.length : 0}</div>
                         <div className='charts_itemLabel'>Active</div>
                     </div>
                     <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
@@ -72,16 +75,25 @@ export default class ScheduledKnerrir extends Base {
                     {!item ? <Loading /> : (
                         <div>
                             <MetadataFields item={item} />
+                            <Field name='Image' value={item.spec.template.image} />
                             <Field name='Schedule' value={item.spec.schedule} />
                             <Field name='Suspend' value={item.spec.suspend} />
-                            <Field name='Last Scheduled' value={item.status.lastScheduleTime} />
+                            <Field name='Last Scheduled' value={item.status.lastRunName} />
                         </div>
                     )}
                 </div>
 
-                <ContainersPanel spec={item && item.spec.jobTemplate.spec.template.spec} />
+                <ContainersPanel spec={item && item.spec.template} />
 
                 {/* TODO: this actually need to be a list of jobs */}
+
+                <div className='contentPanel_header'>Knerrirs</div>
+                <KnerrirPanel
+                    items={filteredKnerrirs}
+                    sort={podsSort}
+                    metrics={filteredMetrics}
+                    skipNamespace={true}
+                />  
 
                 <div className='contentPanel_header'>Pods</div>
                 <PodsPanel

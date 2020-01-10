@@ -13,11 +13,11 @@ import PodRamChart from '../components/podRamChart';
 import SaveButton from '../components/saveButton';
 import api from '../services/api';
 import getMetrics from '../utils/metricsHelpers';
-import {filterByOwner} from '../utils/filterHelper';
+import {filterByOwner, filterByOwners} from '../utils/filterHelper';
 import {defaultSortInfo} from '../components/sorter';
 import ChartsContainer from '../components/chartsContainer';
 
-const service = api.job;
+const service = api.knerrir;
 
 export default class Knerrir extends Base {
     state = {
@@ -39,9 +39,9 @@ export default class Knerrir extends Base {
     render() {
         const {namespace, name} = this.props;
         const {item, pods, events, metrics, podsSort, eventsSort} = this.state;
-
+        console.log(item)
         const filteredPods = filterByOwner(pods, item);
-        const filteredEvents = filterByOwner(events, item);
+        const filteredEvents = filterByOwners(events, filteredPods);
         const filteredMetrics = getMetrics(filteredPods, metrics);
 
         return (
@@ -63,9 +63,9 @@ export default class Knerrir extends Base {
                 <ChartsContainer>
                     <div className='charts_item'>
                         <div className='charts_number'>
-                            {item && (item.status.active || 0)}
+                            {item && (item.status.waybill_names.length || 0)}
                             <span> / </span>
-                            {item && (item.status.succeeded || 0)}
+                            {item && (item.status.knorr_names.length || 0)}
                         </div>
                         <div className='charts_itemLabel'>Active / Succeeded</div>
                     </div>
@@ -83,7 +83,7 @@ export default class Knerrir extends Base {
                     )}
                 </div>
 
-                <ContainersPanel spec={item && item.spec.template.spec} />
+                <ContainersPanel spec={item && item.spec} />
 
                 <div className='contentPanel_header'>Pods</div>
                 <PodsPanel
