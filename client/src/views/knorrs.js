@@ -21,20 +21,18 @@ export default class Knorr extends Base {
     setNamespace(namespace) {
         this.setState({namespace});
         this.setState({items: null});
-        //this.setState({knerrirs: null});
 
         this.registerApi({
             items: api.pod.list(namespace, items => this.setState({items})),
-            //knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
+
             metrics: api.metrics.pods(namespace, metrics => this.setState({metrics})),
         });
     }
 
     render() {
         const {items, metrics, namespace, sort, filter} = this.state;
-        console.log(items)
-        //const filtered = items && items.filter(x => test("knorr", x.metadata.ownerReferences[0].kind));
-        const filtered = filterKnorrs(items, 'knorr');
+        const filtereditems = filterKnorrs(items, 'knorr');
+        const filtered = filtereditems && filtereditems.filter(x => test(filter, x.metadata.name));
         const filteredMetrics = getMetrics(filtered, metrics);
         console.log(filtered)
 
