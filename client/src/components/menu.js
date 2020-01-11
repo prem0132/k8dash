@@ -3,6 +3,7 @@ import React from 'react';
 import Base from './base';
 import {getRootPath} from '../router';
 import EditorModal from '../views/editorModal';
+import KnerrirEditorForm from '../views/knerrirEditorForm';
 import api from '../services/api';
 import {addHandler} from '../services/auth';
 import ResourceSvg from '../art/resourceSvg';
@@ -25,7 +26,7 @@ export default class Menu extends Base {
 
     render() {
         const {onClick, toggled} = this.props;
-        const {showAdd, rules} = this.state || {};
+        const {showAdd, showAddForm, rules} = this.state || {};
 
         return (
             <>
@@ -136,10 +137,26 @@ export default class Menu extends Base {
                         </div>
                     </Group>
 
+                    <Group>
+                        <div className='menu_itemApply'>
+                            <button className='menu_item button_clear' onClick={() => { this.setState({showAddForm: true}); onClick(); }}>
+                                <AddSvg className='menu_icon' />
+                                <div className='menu_title'>Create Knerrir</div>
+                            </button>
+                        </div>
+                    </Group>                    
+
                     {showAdd && (
                         <EditorModal
                             onSave={x => api.apply(x)}
                             onRequestClose={() => this.setState({showAdd: false})}
+                        />
+                    )}
+
+                    {showAddForm && (
+                        <KnerrirEditorForm
+                            onSave={x => api.apply(x)}
+                            onRequestClose={() => this.setState({showAddForm: false})}
                         />
                     )}
 
