@@ -100,6 +100,7 @@ registerRoute('tasks/scheduledknorr/:namespace/:name', params => <ScheduledKnerr
 registerRoute('knerrir', () => <Knerrirs />);
 registerRoute('scheduledKnerrir', () => <ScheduledKnerrirs />);
 registerRoute('knorr', () => <Knorr />);
+registerRoute('knerrirEditorForm', () => <Tasks />);
 
 window.addEventListener('hashchange', onNavigate);
 

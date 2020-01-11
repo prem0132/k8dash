@@ -8,6 +8,10 @@ import Doc from '../components/doc';
 import getDocDefinitions from '../services/docs';
 import LightBulbSvg from '../art/lightBulbSvg';
 import EditSvg from '../art/editSvg';
+import Form from "react-jsonschema-form";
+
+var schema     = require('../components/json-schema');
+var uiSchema     = require('../components/ui-schema');
 
 export default class KnerrirEditorForm extends Base {
     state = {
@@ -57,22 +61,29 @@ export default class KnerrirEditorForm extends Base {
 
     render() {
         const {yaml, properties, showDocs} = this.state || {};
-        const {body} = this.props;
-
-        const defaultYaml = body && yamljs.stringify(body, 10, 2);
+        //const {body} = this.props;
+        const log = (type) => console.log.bind(console, type);
+        //const defaultYaml = body && yamljs.stringify(body, 10, 2);
 
         return (
             <Modal isOpen={true} className='modal_modal' overlayClassName='modal_overlay' onRequestClose={() => this.close()}>
                 <div className='editorModal'>
                     <div className='editorModal_edit'>
-                        <textarea
+                        {/* <textarea
                             hidden={showDocs}
                             className='editorModal_input'
                             defaultValue={defaultYaml}
                             placeholder="Enter knerrir yaml here, y'all..."
                             onChange={x => this.onEdit(x.target.value)}
                             spellCheck='false'
-                        />
+                        /> */}
+                        {/* <KnerrirForm /> */}
+                        <div className='editorModal_container'>
+                        <Form schema={schema} uiSchema={uiSchema}
+                        onChange={log("changed")}
+                        onSubmit={log("submitted")}
+                        onError={log("errors")} /> 
+                        </div>                       
 
                         <div hidden={!showDocs} className='editorModal_docs'>
                             {properties ? (

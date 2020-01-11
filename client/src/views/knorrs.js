@@ -34,7 +34,6 @@ export default class Knorr extends Base {
         const filtereditems = filterKnorrs(items, 'knorr');
         const filtered = filtereditems && filtereditems.filter(x => test(filter, x.metadata.name));
         const filteredMetrics = getMetrics(filtered, metrics);
-        console.log(filtered)
 
         return (
             <div id='content'>

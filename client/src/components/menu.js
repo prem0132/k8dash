@@ -60,7 +60,16 @@ export default class Menu extends Base {
                         )}
                         {canView(rules, api.knerrir) && (
                             <MenuItem title='Knorr' path='knorr' resource='Knorr' onClick={onClick} />
-                        )}                                                
+                        )}
+                        {canView(rules, api.knerrir) && (
+                            <MenuItem title='Create Knerrir' path='knerrirEditorForm' resource='KnerrirEditorForm' onClick={() => { this.setState({showAddForm: true}); onClick(); }} />
+                        // <div className='menu_itemApply'>
+                        //     <button className='menu_item button_clear' onClick={() => { this.setState({showAddForm: true}); onClick(); }}>
+                        //         <AddSvg className='menu_icon' />
+                        //         <div className='menu_title'>Create Knerrir</div>
+                        //     </button>
+                        // </div>
+                        )}
                     </Group>                    
 
                     {/* Workloads */}
@@ -137,14 +146,14 @@ export default class Menu extends Base {
                         </div>
                     </Group>
 
-                    <Group>
+                    {/* <Group>
                         <div className='menu_itemApply'>
                             <button className='menu_item button_clear' onClick={() => { this.setState({showAddForm: true}); onClick(); }}>
                                 <AddSvg className='menu_icon' />
                                 <div className='menu_title'>Create Knerrir</div>
                             </button>
                         </div>
-                    </Group>                    
+                    </Group>                     */}
 
                     {showAdd && (
                         <EditorModal
