@@ -8,10 +8,12 @@ import Doc from '../components/doc';
 import getDocDefinitions from '../services/docs';
 import LightBulbSvg from '../art/lightBulbSvg';
 import EditSvg from '../art/editSvg';
-import Form from "react-jsonschema-form";
+import Form from 'react-jsonschema-form';
+import '../scss/journal.css'
 
-var schema     = require('../components/json-schema');
-var uiSchema     = require('../components/ui-schema');
+var schema     = require('../components/schema/json-schema');
+var uiSchema     = require('../components/schema/ui-schema');
+var formData     = require('../components/schema/dummy-data');
 
 export default class KnerrirEditorForm extends Base {
     state = {
@@ -79,7 +81,7 @@ export default class KnerrirEditorForm extends Base {
                         /> */}
                         {/* <KnerrirForm /> */}
                         <div className='editorModal_container'>
-                        <Form schema={schema} uiSchema={uiSchema}
+                        <Form className='' formData={formData} liveValidate={true}  schema={schema} uiSchema={uiSchema}
                         onChange={log("changed")}
                         onSubmit={log("submitted")}
                         onError={log("errors")} /> 

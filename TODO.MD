@@ -11,3 +11,5 @@
 1. Add totalRunCount and Active
 1. Reduce number of ConfigMaps
 1. Docs support for editorForm
+1. Add uploadfile
+1. Make svg
