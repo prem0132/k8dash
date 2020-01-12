@@ -1,6 +1,5 @@
 import React from 'react';
-import page from 'page';
-import {hasToken} from './services/apiProxy';
+import {hasToken} from './services/auth';
 import Account from './views/account';
 import Auth from './views/auth';
 import ClusterRole from './views/clusterRole';
@@ -102,28 +101,59 @@ export function initRouter() {
     }
 }
 
-export function registerHandler(handler) {
-    handlers.push(handler);
+window.addEventListener('hashchange', onNavigate);
+
+export function initRouter(cb) {
+    handler = cb;
+    onNavigate();
 }
 
 export function getRootPath() {
-    return path;
+    return getPathParts()[0];
+}
+
+function getPathParts() {
+    return window.location.hash.replace('#!', '').split('/');
 }
 
 function registerRoute(route, factory) {
-    page(route, (context) => {
-        const [current] = context.path.split('/').filter(x => !!x);
-        path = current || '';
-
-        if (!hasToken()) {
-            onRoute(<Auth />);
-        } else {
-            const result = factory(context.params);
-            onRoute(result);
-        }
-    });
+    const routeParts = route.split('/');
+    routes.push({routeParts, factory});
 }
 
-function onRoute(value) {
-    handlers.forEach(x => x(value));
+function onNavigate() {
+    const content = getContent();
+    handler(content);
+}
+
+function getContent() {
+    if (!hasToken()) return <Auth />;
+
+    const pathParts = getPathParts();
+    for (const {routeParts, factory} of routes) {
+        const {isMatch, params} = testRoute(pathParts, routeParts);
+        if (isMatch) return factory(params);
+    }
+
+    return <NotFound />;
+}
+
+function testRoute(pathParts, routeParts) {
+    if (pathParts.length !== routeParts.length) return {isMatch: false};
+
+    const params = {};
+
+    for (let i = 0; i < pathParts.length; i++) {
+        const pathPart = pathParts[i];
+        const routePart = routeParts[i];
+
+        if (routePart.startsWith(':')) {
+            const paramName = routePart.replace(':', '');
+            params[paramName] = pathPart;
+        } else if (pathPart !== routePart) {
+            return {isMatch: false};
+        }
+    }
+
+    return {isMatch: true, params};
 }

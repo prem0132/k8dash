@@ -1,12 +1,40 @@
 import _ from 'lodash';
-import {request, stream, streamResult, streamResults} from './apiProxy';
+import {Base64} from 'js-base64';
+import {request, post, stream, apiFactory, apiFactoryWithNamespace} from './apiProxy';
 import log from '../utils/log';
 
-const JSON_HEADERS = {Accept: 'application/json', 'Content-Type': 'application/json'};
+const configMap = apiFactoryWithNamespace('', 'v1', 'configmaps');
+const event = apiFactoryWithNamespace('', 'v1', 'events');
+const namespaceService = apiFactory('', 'v1', 'namespaces');
+const node = apiFactory('', 'v1', 'nodes');
+const persistentVolume = apiFactory('', 'v1', 'persistentvolumes');
+const persistentVolumeClaim = apiFactoryWithNamespace('', 'v1', 'persistentvolumeclaims');
+const pod = apiFactoryWithNamespace('', 'v1', 'pods');
+const secret = apiFactoryWithNamespace('', 'v1', 'secrets');
+const serviceAccount = apiFactoryWithNamespace('', 'v1', 'serviceaccounts');
+const serviceService = apiFactoryWithNamespace('', 'v1', 'services');
+
+const clusterRole = apiFactory('rbac.authorization.k8s.io', 'v1', 'clusterroles');
+const clusterRoleBinding = apiFactory('rbac.authorization.k8s.io', 'v1', 'clusterrolebindings');
+const role = apiFactoryWithNamespace('rbac.authorization.k8s.io', 'v1', 'roles');
+const roleBinding = apiFactoryWithNamespace('rbac.authorization.k8s.io', 'v1', 'rolebindings');
+
+const daemonSet = apiFactoryWithNamespace('apps', 'v1', 'daemonsets');
+const deployment = apiFactoryWithNamespace('apps', 'v1', 'deployments', true);
+const replicaSet = apiFactoryWithNamespace('apps', 'v1', 'replicasets', true);
+const statefulSet = apiFactoryWithNamespace('apps', 'v1', 'statefulsets', true);
+
+const cronJob = apiFactoryWithNamespace('batch', 'v1beta1', 'cronjobs');
+const job = apiFactoryWithNamespace('batch', 'v1', 'jobs');
+
+const ingress = apiFactoryWithNamespace('extensions', 'v1beta1', 'ingresses');
+
+const storageClass = apiFactory('storage.k8s.io', 'v1', 'storageclasses');
 
 const apis = {
     apply,
     testAuth,
+    getRules,
     logs,
     swagger,
     exec,
@@ -42,8 +70,12 @@ const apis = {
 };
 
 async function testAuth() {
-    const spec = {resourceAttributes: {}};
-    return post('apis/authorization.k8s.io/v1/selfsubjectaccessreviews', {spec}, false);
+    const spec = {namespace: 'default'};
+    await post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', {spec}, false);
+}
+
+function getRules(namespace) {
+    return post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', {spec: {namespace}});
 }
 
 async function apply(body) {
@@ -105,86 +137,33 @@ function metrics(url, cb) {
     }
 }
 
-function apiFactory(apiType, kind) {
-    const url = `${apiType}/${kind}`;
-    return {
-        list: cb => streamResults(url, cb),
-        get: (name, cb) => streamResult(url, name, cb),
-        post: body => post(url, body),
-        put: body => put(`${url}/${body.metadata.name}`, body),
-        delete: name => del(`${url}/${name}`),
-    };
-}
-
-function apiFactoryWithNamespace(apiType, kind, includeScale) {
-    const results = {
-        list: (namespace, cb) => streamResults(url(namespace), cb),
-        get: (namespace, name, cb) => streamResult(url(namespace), name, cb),
-        post: body => post(url(body.metadata.namespace), body),
-        put: body => put(`${url(body.metadata.namespace)}/${body.metadata.name}`, body),
-        delete: (namespace, name) => del(`${url(namespace)}/${name}`),
-    };
-
-    if (includeScale) {
-        results.scale = apiScaleFactory(apiType, kind);
-    }
-
-    return results;
-
-    function url(namespace) {
-        return namespace ? `${apiType}/namespaces/${namespace}/${kind}` : `${apiType}/${kind}`;
-    }
-}
-
-function apiScaleFactory(apiType, kind) {
-    return {
-        get: (namespace, name) => request(url(namespace, name)),
-        put: body => put(url(body.metadata.namespace, body.metadata.name), body),
-    };
-
-    function url(namespace, name) {
-        return `${apiType}/namespaces/${namespace}/${kind}/${name}/scale`;
-    }
-}
-
 function swagger() {
     return request('/openapi/v2');
 }
 
 function exec(namespace, name, container, cb) {
     const url = `/api/v1/namespaces/${namespace}/pods/${name}/exec?container=${container}&command=sh&stdin=1&stderr=1&stdout=1&tty=1`;
-    const protocols = ['v4.channel.k8s.io', 'v3.channel.k8s.io', 'v2.channel.k8s.io', 'channel.k8s.io'];
-    return stream(url, cb, false, protocols);
+    const additionalProtocols = ['v4.channel.k8s.io', 'v3.channel.k8s.io', 'v2.channel.k8s.io', 'channel.k8s.io'];
+    return stream(url, cb, {additionalProtocols, isJson: false});
 }
 
-function logs(namespace, name, container, showPrevious, cb) {
-    const url = `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&previous=${showPrevious}&tailLines=2000&follow=true`;
-    const {cancel} = stream(url, transformer, false);
+function logs(namespace, name, container, tailLines, showPrevious, cb) {
+    const items = [];
+    const url = `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&previous=${showPrevious}&tailLines=${tailLines}&follow=true`;
+    const {cancel} = stream(url, transformer, {isJson: false, connectCb});
     return cancel;
+
+    function connectCb() {
+        items.length = 0;
+    }
 
     function transformer(item) {
         if (!item) return; // For some reason, this api returns a lot of empty strings
 
-        const message = atob(item);
-        cb(message);
+        const message = Base64.decode(item);
+        items.push(message);
+        cb(items);
     }
-}
-
-function post(url, json, autoLogoutOnAuthError = true) {
-    const body = JSON.stringify(json);
-    const opts = {method: 'POST', body, headers: JSON_HEADERS};
-    return request(url, opts, autoLogoutOnAuthError);
-}
-
-function put(url, json, autoLogoutOnAuthError = true) {
-    const body = JSON.stringify(json);
-    const opts = {method: 'PUT', body, headers: JSON_HEADERS};
-    return request(url, opts, autoLogoutOnAuthError);
-}
-
-function del(url) {
-    const opts = {method: 'DELETE', headers: JSON_HEADERS};
-    return request(url, opts);
 }
 
 export default apis;

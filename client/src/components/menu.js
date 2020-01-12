@@ -7,6 +7,7 @@ import api from "../services/api";
 import ResourceSvg from "../art/resourceSvg";
 import AddSvg from "../art/addSvg";
 
+
 export default class Menu extends Base {
   render() {
     const { onClick, toggled } = this.props;
