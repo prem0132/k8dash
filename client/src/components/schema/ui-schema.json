@@ -1,25 +1,9 @@
 {
-  "name": {
-    "ui:autofocus": true,
-    "ui:emptyValue": ""
-  },
   "apiVersion": {
     "ui:readonly": true
   },
-  "bio": {
-    "ui:widget": "textarea"
-  },
-  "password": {
-    "ui:widget": "password",
-    "ui:help": "Hint: Make it strong!"
-  },
-  "date": {
-    "ui:widget": "alt-datetime"
-  },
-  "telephone": {
-    "ui:options": {
-      "inputType": "tel"
-    }
+  "kind": {
+    "ui:readonly": true
   }
 }
 

@@ -11,11 +11,16 @@ import EditSvg from '../art/editSvg';
 import Form from 'react-jsonschema-form';
 import '../scss/journal.css'
 
-var schema     = require('../components/schema/json-schema');
+var schema     = require('../components/schema/select-schema');
 var uiSchema     = require('../components/schema/ui-schema');
 var formData     = require('../components/schema/dummy-data');
 
 export default class KnerrirEditorForm extends Base {
+    constructor(props) {
+        super(props);
+        this.handleSubmit = this.handleSubmit.bind(this);
+      }
+
     state = {
         showDocs: false,
     };
@@ -27,20 +32,21 @@ export default class KnerrirEditorForm extends Base {
     async onEdit(yaml) {
         this.setState({yaml});
 
-        try {
-            const body = yamljs.parse(yaml);
-            this.findDocs(body);
-        } catch (err) {
-            // Do nothing here. The current yaml can't be parsed
-        }
+        // try {
+        //     //const body = yamljs.parse(yaml);
+        //     this.findDocs(body);
+        // } catch (err) {
+        //     // Do nothing here. The current yaml can't be parsed
+        // }
     }
 
     async save() {
         const {onSave} = this.props;
         const {yaml = ''} = this.state;
+        console.log(yaml)
 
-        const json = yamljs.parse(yaml);
-        const shouldClose = await onSave(json);
+        //const json = yamljs.parse(yaml);
+        const shouldClose = await onSave(yaml);
         if (shouldClose) this.close();
     }
 
@@ -61,11 +67,15 @@ export default class KnerrirEditorForm extends Base {
         setTimeout(() => onRequestClose(), 0);
     }
 
+    handleSubmit(e) {
+        this.onEdit(e.formData)
+      }
+
     render() {
         const {yaml, properties, showDocs} = this.state || {};
-        //const {body} = this.props;
+        const {body} = this.props;
         const log = (type) => console.log.bind(console, type);
-        //const defaultYaml = body && yamljs.stringify(body, 10, 2);
+        const defaultYaml = body && JSON.stringify(body, 10, 2);
 
         return (
             <Modal isOpen={true} className='modal_modal' overlayClassName='modal_overlay' onRequestClose={() => this.close()}>
@@ -81,9 +91,9 @@ export default class KnerrirEditorForm extends Base {
                         /> */}
                         {/* <KnerrirForm /> */}
                         <div className='editorModal_container'>
-                        <Form className='' formData={formData} liveValidate={true}  schema={schema} uiSchema={uiSchema}
+                        <Form className='' formData={formData} liveValidate={true}  schema={schema} uiSchema={uiSchema} ref={(formData) => this.formDatainput = formData}
                         onChange={log("changed")}
-                        onSubmit={log("submitted")}
+                        onSubmit={this.handleSubmit}
                         onError={log("errors")} /> 
                         </div>                       
 
