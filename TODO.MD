@@ -13,3 +13,4 @@
 1. Docs support for editorForm
 1. Add uploadfile
 1. Make svg
+1. Fix sorting in new panels

@@ -8,7 +8,8 @@ import Field from '../components/field';
 import ItemHeader from '../components/itemHeader';
 import Loading from '../components/loading';
 import MetadataFields from '../components/metadataFields';
-import PodsPanel from '../components/podsPanel';
+import KnorrPanel from '../components/knorrPanel';
+import WaybillPanel from '../components/waybillPanel';
 import PodRamChart from '../components/podRamChart';
 import SaveButton from '../components/saveButton';
 import api from '../services/api';
@@ -39,7 +40,6 @@ export default class Knerrir extends Base {
     render() {
         const {namespace, name} = this.props;
         const {item, pods, events, metrics, podsSort, eventsSort} = this.state;
-        console.log(item)
         const filteredPods = filterByOwner(pods, item);
         const filteredEvents = filterByOwners(events, filteredPods);
         const filteredMetrics = getMetrics(filteredPods, metrics);
@@ -77,16 +77,17 @@ export default class Knerrir extends Base {
                     {!item ? <Loading /> : (
                         <div>
                             <MetadataFields item={item} />
-                            <Field name='Start Time' value={item.status.startTime} />
+                            <Field name='Start Time' value={item.metadata.creationTimestamp} />
                             <Field name='Completion Time' value={item.status.completionTime} />
                         </div>
                     )}
                 </div>
 
                 <ContainersPanel spec={item && item.spec} />
+                <WaybillPanel spec={item && item.spec} />
 
                 <div className='contentPanel_header'>Pods</div>
-                <PodsPanel
+                <KnorrPanel
                     items={filteredPods}
                     sort={podsSort}
                     metrics={filteredMetrics}

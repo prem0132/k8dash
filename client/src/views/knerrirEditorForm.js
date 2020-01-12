@@ -43,8 +43,7 @@ export default class KnerrirEditorForm extends Base {
     async save() {
         const {onSave} = this.props;
         const {yaml = ''} = this.state;
-        console.log(yaml)
-
+        
         //const json = yamljs.parse(yaml);
         const shouldClose = await onSave(yaml);
         if (shouldClose) this.close();

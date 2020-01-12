@@ -7,7 +7,7 @@ import {MetadataHeaders, MetadataColumns, TableBody} from './listViewHelpers';
 import {unparseRam, unparseCpu} from '../utils/unitHelpers';
 import {getPodResourcePercent, getPodUsage, getPodResourceValue} from '../utils/metricsHelpers';
 
-export default class KnerrirPanel extends Base {
+export default class KnorrsPanel extends Base {
     constructor(props) {
         super(props);
 
@@ -32,10 +32,20 @@ export default class KnerrirPanel extends Base {
                             <MetadataHeaders sort={sort} includeNamespace={true} />
                             <th className='optional_xsmall'>
                             <Sorter field={this.sortByCpuLimit} sort={sort}>
-                                Start
+                                    Start
                                 <div className='smallText'>Time</div>
                             </Sorter>
                             </th>
+                            <th className='optional_xsmall'>
+                                <Sorter field={this.sortByCpuLimit} sort={sort}>
+                                    Knerrir
+                                </Sorter>
+                            </th>    
+                            <th className='optional_xsmall'>
+                                <Sorter field={this.sortByCpuLimit} sort={sort}>
+                                    Table
+                                </Sorter>
+                            </th>                                                            
                             <th className='optional_xsmall'>
                                 <Sorter field={this.sortByCpuLimit} sort={sort}>
                                     Status
@@ -50,10 +60,12 @@ export default class KnerrirPanel extends Base {
                                 item={x}
                                 resourceClass={getPhaseStyle(x.status.phase)}
                                 includeNamespace={true}
-                                href={`#!knerrir/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                href={`#!${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                             />
                             <td className='optional_medium'>{x.metadata.creationTimestamp}</td>
-                            <td className='optional_medium'>{x.status.knorr_status.state}</td>
+                            <td className='optional_medium'>{x.metadata.labels.knerrir}</td>
+                            <td className='optional_medium'>{x.metadata.labels.tablename}</td>
+                            <td className='optional_medium'>{x.status.phase}</td>
                         </tr>
                     )} />
                 </table>

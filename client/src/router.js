@@ -98,7 +98,9 @@ registerRoute('tasks/job/:namespace/:name', params => <Job {...params} />);
 registerRoute('tasks/knorr/:namespace/:name', params => <Knerrir {...params} />);
 registerRoute('tasks/scheduledknorr/:namespace/:name', params => <ScheduledKnerrir {...params} />);
 registerRoute('knerrir', () => <Knerrirs />);
+registerRoute('knerrir/knorr/:namespace/:name', params => <Knerrir {...params} />);
 registerRoute('scheduledKnerrir', () => <ScheduledKnerrirs />);
+registerRoute('scheduledKnerrir/scheduledknorr/:namespace/:name', params => <ScheduledKnerrir {...params} />);
 registerRoute('knorr', () => <Knorr />);
 registerRoute('knerrirEditorForm', () => <Tasks />);
 

@@ -56,6 +56,17 @@ export default class Knerrirs extends Base {
                         <thead>
                             <tr>
                                 <MetadataHeaders includeNamespace={true} sort={sort}/>
+                                <th className='optional_xsmall'>
+                                    <Sorter field={this.sortByCpuLimit} sort={sort}>
+                                        Start
+                                        <div className='smallText'>Time</div>
+                                    </Sorter>
+                                </th>
+                                <th className='optional_xsmall'>
+                                        <Sorter field={this.sortByCpuLimit} sort={sort}>
+                                            Status
+                                        </Sorter>
+                                </th>    
                                 <th><Sorter field={getExpectedCount} sort={sort}>Pods</Sorter></th>
                             </tr>
                         </thead>
@@ -65,8 +76,10 @@ export default class Knerrirs extends Base {
                                 <MetadataColumns
                                     item={x}
                                     includeNamespace={true}
-                                    href={`#!tasks/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                    href={`#!knerrir/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                                 />
+                                <td className='optional_medium'>{x.metadata.creationTimestamp}</td>
+                                <td className='optional_medium'>{x.status.knorr_status.state}</td>                                
                                 <td>
                                     <Status item={x} />
                                 </td>

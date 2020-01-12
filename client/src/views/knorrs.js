@@ -5,7 +5,7 @@ import api from '../services/api';
 import test from '../utils/filterHelper'
 import PodCpuChart from '../components/podCpuChart';
 import PodRamChart from '../components/podRamChart';
-import PodsPanel from '../components/podsPanel';
+import KnorrsPanel from '../components/knorrPanel';
 import PodStatusChart from '../components/podStatusChart';
 import {defaultSortInfo} from '../components/sorter';
 import getMetrics from '../utils/metricsHelpers';
@@ -50,7 +50,7 @@ export default class Knorr extends Base {
                     <PodRamChart items={filtered} metrics={filteredMetrics} />
                 </ChartsContainer>
 
-                <PodsPanel
+                <KnorrsPanel
                     items={filtered}
                     filter={filter}
                     sort={sort}

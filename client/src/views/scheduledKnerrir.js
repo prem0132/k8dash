@@ -8,7 +8,7 @@ import Field from '../components/field';
 import ItemHeader from '../components/itemHeader';
 import Loading from '../components/loading';
 import MetadataFields from '../components/metadataFields';
-import PodsPanel from '../components/podsPanel';
+import KnorrsPanel from '../components/knorrPanel';
 import KnerrirPanel from '../components/knerrirPanel';
 import PodRamChart from '../components/podRamChart';
 import SaveButton from '../components/saveButton';
@@ -96,7 +96,7 @@ export default class ScheduledKnerrir extends Base {
                 />  
 
                 <div className='contentPanel_header'>Pods</div>
-                <PodsPanel
+                <KnorrsPanel
                     items={filteredPods}
                     sort={podsSort}
                     metrics={filteredMetrics}
