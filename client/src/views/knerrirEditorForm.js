@@ -11,14 +11,18 @@ import EditSvg from '../art/editSvg';
 import Form from 'react-jsonschema-form';
 import '../scss/journal.css'
 
-var schema     = require('../components/schema/select-schema');
-var uiSchema     = require('../components/schema/ui-schema');
-var formData     = require('../components/schema/dummy-data');
+var fullschema     = require('../components/schema/select-schema');
+var uiSchema     = require('../components/schema/ui-Schema');
 
 export default class KnerrirEditorForm extends Base {
     constructor(props) {
         super(props);
+        this.state = {formData: {},
+            resourcetype: 'Knerrir',
+            schema: fullschema.properties.Knerrir };
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.selectSubmit = this.selectSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
       }
 
     state = {
@@ -30,14 +34,14 @@ export default class KnerrirEditorForm extends Base {
     }
 
     async onEdit(yaml) {
-        this.setState({yaml});
+        this.setState({formData: yaml});
 
-        // try {
-        //     //const body = yamljs.parse(yaml);
-        //     this.findDocs(body);
-        // } catch (err) {
-        //     // Do nothing here. The current yaml can't be parsed
-        // }
+        try {
+            //const body = yamljs.parse(yaml);
+            this.findDocs(yaml);
+        } catch (err) {
+            // Do nothing here. The current yaml can't be parsed
+        }
     }
 
     async save() {
@@ -68,30 +72,35 @@ export default class KnerrirEditorForm extends Base {
 
     handleSubmit(e) {
         this.onEdit(e.formData)
+        this.setState({yaml: e.formData});
       }
 
+    handleChange(e) {
+        this.onEdit(e.formData)
+    }      
+
+    selectSubmit(e) {
+        this.setState({resourcetype: e});
+        this.setState({schema: fullschema.properties[e]});
+        this.setState({formData: {kind: e}});
+    }      
+
     render() {
-        const {yaml, properties, showDocs} = this.state || {};
+        const {yaml, schema, properties, showDocs} = this.state || {};
         const {body} = this.props;
         const log = (type) => console.log.bind(console, type);
         const defaultYaml = body && JSON.stringify(body, 10, 2);
-
         return (
             <Modal isOpen={true} className='modal_modal' overlayClassName='modal_overlay' onRequestClose={() => this.close()}>
                 <div className='editorModal'>
                     <div className='editorModal_edit'>
-                        {/* <textarea
-                            hidden={showDocs}
-                            className='editorModal_input'
-                            defaultValue={defaultYaml}
-                            placeholder="Enter knerrir yaml here, y'all..."
-                            onChange={x => this.onEdit(x.target.value)}
-                            spellCheck='false'
-                        /> */}
-                        {/* <KnerrirForm /> */}
-                        <div className='editorModal_container'>
-                        <Form className='' formData={formData} liveValidate={true}  schema={schema} uiSchema={uiSchema} ref={(formData) => this.formDatainput = formData}
-                        onChange={log("changed")}
+                        <div className='editorModal_container'> 
+                        <select className="browser-default custom-select" onChange={x => this.selectSubmit(x.target.value)}>
+                        <option value='Knerrir' defaultValue='Knerrir'>Knerrir</option>
+                        <option value="ScheduledKnerrir">Scheduled Knerrir</option>
+                        </select>                                                
+                        <Form className="" formData={this.state.formData} liveValidate={true}  schema={schema} uiSchema={uiSchema}
+                        onChange={this.handleChange}
                         onSubmit={this.handleSubmit}
                         onError={log("errors")} /> 
                         </div>                       
@@ -129,12 +138,3 @@ export default class KnerrirEditorForm extends Base {
         );
     }
 }
-
-// function yaml2js(allowArrays, yaml) {
-//     if (!allowArrays) return yamljs.parse(yaml);
-
-//     return yaml
-//         .split('---')
-//         .filter(Boolean)
-//         .map(yamljs.parse);
-// }

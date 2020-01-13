@@ -4,7 +4,11 @@
   },
   "kind": {
     "ui:readonly": true
-  }
+  },
+  "chunk_size": {
+    "ui:widget": "range"
+  },
+  "password": {
+    "ui:widget": "password"
+  }  
 }
-
-
