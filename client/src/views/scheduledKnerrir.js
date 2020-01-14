@@ -64,9 +64,13 @@ export default class ScheduledKnerrir extends Base {
 
                 <ChartsContainer>
                     <div className='charts_item'>
-                        <div className='charts_number'>{(item && item.status.pastFailedRunNames.length ) ? item.status.pastFailedRunNames.length : 0}</div>
-                        <div className='charts_itemLabel'>Active</div>
-                    </div>
+                        <div className='charts_number'>
+                            {(item && item.status.pastFailedRunNames ) ? item.status.pastFailedRunNames.length : 0}
+                            <span> / </span>
+                            {(item && item.status.pastSuccessfulRunNames ) ? item.status.pastSuccessfulRunNames.length : 0}
+                        </div>
+                        <div className='charts_itemLabel'>Failed / Succeeded</div>                        
+                    </div>                   
                     <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
                     <PodRamChart items={filteredPods} metrics={filteredMetrics} />
                 </ChartsContainer>

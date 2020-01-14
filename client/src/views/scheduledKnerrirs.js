@@ -65,7 +65,7 @@ export default class ScheduledKnerrir extends Base {
                                 <MetadataColumns
                                     item={x}
                                     includeNamespace={true}
-                                    href={`#!scheduledKnerrir/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                    href={`#!scheduledknerrirs/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                                 />
                                 <td>
                                     <Status item={x} />

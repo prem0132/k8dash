@@ -50,10 +50,10 @@ export default class KnerrirPanel extends Base {
                                 item={x}
                                 resourceClass={getPhaseStyle(x.status.phase)}
                                 includeNamespace={true}
-                                href={`#!knerrir/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
+                                href={`#!knerrirs/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                             />
                             <td className='optional_medium'>{x.metadata.creationTimestamp}</td>
-                            <td className='optional_medium'>{x.status.knorr_status.state}</td>
+                            <td className='optional_medium'>{x.status.knerrir_status.state}</td>
                         </tr>
                     )} />
                 </table>

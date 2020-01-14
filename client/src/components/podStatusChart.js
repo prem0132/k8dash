@@ -5,7 +5,7 @@ import LoadingChart from './loadingChart';
 
 export default function PodStatusChart({items}) {
     const available = items && items.length;
-    const count = _.sumBy(items, x => x.status.phase === 'Running' ? 1 : 0); // eslint-disable-line no-confusing-arrow
+    const count = _.sumBy(items, x => x.status.phase === 'Running' || x.status.phase === 'Succeeded' ? 1 : 0); // eslint-disable-line no-confusing-arrow
 
     return (
         <div className='charts_item'>
@@ -15,7 +15,7 @@ export default function PodStatusChart({items}) {
                 <LoadingChart />
             )}
             <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
+            <div className='charts_itemSubLabel'>Succeeded vs Scheduled</div>
         </div>
     );
 }

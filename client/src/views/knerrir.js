@@ -67,7 +67,7 @@ export default class Knerrir extends Base {
                             <span> / </span>
                             {item && (item.status.knorr_names.length || 0)}
                         </div>
-                        <div className='charts_itemLabel'>Active / Succeeded</div>
+                        <div className='charts_itemLabel'>Waybill / Knorrs</div>
                     </div>
                     <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
                     <PodRamChart items={filteredPods} metrics={filteredMetrics} />

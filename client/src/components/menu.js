@@ -53,13 +53,13 @@ export default class Menu extends Base {
                             <MenuItem title='Tasks' path='tasks' resource='Tasks' onClick={onClick} />
                         )}                        
                         {canView(rules, api.knerrir) && (
-                            <MenuItem title='Knerrir' path='knerrir' resource='Knerrir' onClick={onClick} />
+                            <MenuItem title='Knerrir' path='knerrirs' resource='Knerrir' onClick={onClick} />
                         )}
                         {canView(rules, api.scheduledKnerrir) && (
-                            <MenuItem title='Scheduled' path='scheduledKnerrir' resource='ScheduledKnerrir' onClick={onClick} />
+                            <MenuItem title='Scheduled' path='scheduledknerrirs' resource='ScheduledKnerrir' onClick={onClick} />
                         )}
                         {canView(rules, api.knerrir) && (
-                            <MenuItem title='Knorrs' path='knorr' resource='Knorr' onClick={onClick} />
+                            <MenuItem title='Knorr' path='knorr' resource='Knorr' onClick={onClick} />
                         )}
                         {canView(rules, api.knerrir) && (
                             <MenuItem title='Create Knerrir' path='knerrirEditorForm' resource='KnerrirEditorForm' onClick={() => { this.setState({showAddForm: true}); onClick(); }} />
