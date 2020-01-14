@@ -15,7 +15,7 @@ export default function PodStatusChart({items}) {
                 <LoadingChart />
             )}
             <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Succeeded vs Scheduled</div>
+            <div className='charts_itemSubLabel'>Ready vs Requested</div>
         </div>
     );
 }

@@ -2,8 +2,8 @@ replicaCount: 1
 revisionHistoryLimit: 1
 
 image:
-  registry: herbrandson
-  name: k8dash
+  registry: asia.gcr.io/gcp-my-th-it-dev
+  name: k8sdashboard
   tag: latest
   pullPolicy: IfNotPresent
   resources:

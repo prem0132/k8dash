@@ -3,11 +3,13 @@ import React from 'react';
 import Base from '../components/base';
 import Chart from '../components/chart';
 import Filter from '../components/filter';
+import {filterByOwners} from '../utils/filterHelper';
+import PodStatusChart from '../components/podStatusChart';
 import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
 import {defaultSortInfo} from '../components/sorter';
 import api from '../services/api';
 import test from '../utils/filterHelper';
-// import Working from '../components/working';
+import Working from '../components/working';
 import LoadingChart from '../components/loadingChart';
 import ChartsContainer from '../components/chartsContainer';
 
@@ -28,6 +30,7 @@ export default class Tasks extends Base {
         this.registerApi({
             cronJobs: api.cronJob.list(namespace, x => this.setState({cronJobs: x})),
             jobs: api.job.list(namespace, x => this.setState({jobs: x})),
+            pods: api.pod.list(namespace, pods => this.setState({pods})),
             knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
             scheduledKnerrir: api.scheduledKnerrir.list(namespace, x => this.setState({scheduledKnerrir: x})),
         });
@@ -38,10 +41,11 @@ export default class Tasks extends Base {
     }
 
     render() {
-        const {cronJobs, jobs, knerrir, scheduledKnerrir, sort, filter} = this.state;
+        const {cronJobs, jobs, knerrir, pods, scheduledKnerrir, sort, filter} = this.state;
         const items = [cronJobs, jobs, knerrir, scheduledKnerrir];
 
         const filtered = filterControllers(filter, items);
+        const filteredPods = filterByOwners(pods, filtered);  
 
         return (
             <div id='content'>
@@ -54,7 +58,7 @@ export default class Tasks extends Base {
 
                 <ChartsContainer>
                     <ControllerStatusChart items={filtered} />
-                    <PodStatusChart items={filtered} />
+                    <PodStatusChart items={filteredPods} />
                 </ChartsContainer>
 
                 <div className='contentPanel'>
@@ -113,31 +117,15 @@ function ControllerStatusChart({items}) {
     );
 }
 
-function PodStatusChart({items}) {
-    const current = _.sumBy(items, getCurrentCount);
-    const expected = _.sumBy(items, getExpectedCount);
 
-    return (
-        <div className='charts_item'>
-            {items ? (
-                <Chart used={current} pending={expected - current} available={expected} />
-            ) : (
-                <LoadingChart />
-            )}
-            <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
-        </div>
-    );
+function Status({item}) {
+    const current = getCurrentCount(item);
+    const expected = getExpectedCount(item);
+    const text = `${current} / ${expected}`;
+
+    if (current === expected) return <span>{text}</span>;
+    return <Working className='contentPanel_warn' text={text} />;
 }
-
-// function Status({item}) {
-//     const current = getCurrentCount(item);
-//     const expected = getExpectedCount(item);
-//     const text = `${current} / ${expected}`;
-
-//     if (current === expected) return <span>{text}</span>;
-//     return <Working className='contentPanel_warn' text={text} />;
-// }
 
 function getCurrentCount({status}) {
     return 1;

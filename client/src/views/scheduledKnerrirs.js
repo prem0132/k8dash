@@ -3,6 +3,8 @@ import React from 'react';
 import Base from '../components/base';
 import Chart from '../components/chart';
 import Filter from '../components/filter';
+import KnorrPodStatusChart from '../components/knorrPodStatusChart';
+import {filterByOwners} from '../utils/filterHelper';
 import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
 import Sorter, {defaultSortInfo} from '../components/sorter';
 import api from '../services/api';
@@ -24,6 +26,10 @@ export default class ScheduledKnerrir extends Base {
 
         this.registerApi({
             scheduledKnerrir: api.scheduledKnerrir.list(namespace, x => this.setState({scheduledKnerrir: x})),
+            knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
+            pods: api.pod.list(namespace, pods => this.setState({pods})),
+            events: api.event.list(namespace, events => this.setState({events})),
+            metrics: api.metrics.pods(namespace, metrics => this.setState({metrics})),      
         });
     }
 
@@ -32,10 +38,11 @@ export default class ScheduledKnerrir extends Base {
     }
 
     render() {
-        const {scheduledKnerrir, sort, filter} = this.state;
+        const {scheduledKnerrir, knerrir, pods, events, metrics, sort, filter} = this.state;
         const items = [scheduledKnerrir];
-
         const filtered = filterControllers(filter, items);
+        const filteredknerrirs = filterByOwners(knerrir, filtered);
+        const filteredPods = filterByOwners(pods, filteredknerrirs);        
 
         return (
             <div id='content'>
@@ -48,7 +55,8 @@ export default class ScheduledKnerrir extends Base {
 
                 <ChartsContainer>
                     <ControllerStatusChart items={filtered} />
-                    <PodStatusChart items={filtered} />
+                    <KnerrirStatusChart items={filteredknerrirs} />
+                    <KnorrPodStatusChart items={filteredPods} />                 
                 </ChartsContainer>
 
                 <div className='contentPanel'>
@@ -102,23 +110,6 @@ function ControllerStatusChart({items}) {
     );
 }
 
-function PodStatusChart({items}) {
-    const current = _.sumBy(items, getCurrentCount);
-    const expected = _.sumBy(items, getExpectedCount);
-
-    return (
-        <div className='charts_item'>
-            {items ? (
-                <Chart used={current} pending={expected - current} available={expected} />
-            ) : (
-                <LoadingChart />
-            )}
-            <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
-        </div>
-    );
-}
-
 function Status({item}) {
     const current = getCurrentCount(item);
     const expected = getExpectedCount(item);
@@ -149,4 +140,21 @@ function filterControllers(filter, items) {
         .flatten()
         .filter(x => test(filter, x.metadata.name))
         .value();
+}
+
+function KnerrirStatusChart({items}) {
+    const available = items && items.length;
+    const count = _.sumBy(items, x => x.status.knerrir_status.state === 'FAILED' ? 1 : 0); // eslint-disable-line no-confusing-arrow
+
+    return (
+        <div className='charts_item'>
+            {items ? (
+                <Chart used={count} pending={available - count} available={available} />
+            ) : (
+                <LoadingChart />
+            )}
+            <div className='charts_itemLabel'>Knerrirs</div>
+            <div className='charts_itemSubLabel'>Completed vs Scheduled</div>
+        </div>
+    );
 }

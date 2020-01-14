@@ -3,11 +3,16 @@ import React from 'react';
 import Base from '../components/base';
 import Chart from '../components/chart';
 import Filter from '../components/filter';
+import PodCpuChart from '../components/podCpuChart';
+import PodRamChart from '../components/podRamChart';
+import KnorrPodStatusChart from '../components/knorrPodStatusChart';
+import getMetrics from '../utils/metricsHelpers';
 import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
 import Sorter, {defaultSortInfo} from '../components/sorter';
 import api from '../services/api';
 import test from '../utils/filterHelper';
 import Working from '../components/working';
+import {filterByOwners} from '../utils/filterHelper';
 import LoadingChart from '../components/loadingChart';
 import ChartsContainer from '../components/chartsContainer';
 
@@ -15,6 +20,8 @@ export default class Knerrirs extends Base {
     state = {
         filter: '',
         sort: defaultSortInfo(this),
+        podsSort: defaultSortInfo(x => this.setState({podsSort: x})),
+        eventsSort: defaultSortInfo(x => this.setState({eventsSort: x})),        
     };
 
     setNamespace(namespace) {
@@ -24,6 +31,9 @@ export default class Knerrirs extends Base {
 
         this.registerApi({
             knerrir: api.knerrir.list(namespace, x => this.setState({knerrir: x})),
+            pods: api.pod.list(namespace, pods => this.setState({pods})),
+            events: api.event.list(namespace, events => this.setState({events})),
+            metrics: api.metrics.pods(namespace, metrics => this.setState({metrics})),            
         });
     }
 
@@ -32,10 +42,14 @@ export default class Knerrirs extends Base {
     }
 
     render() {
-        const {knerrir, sort, filter} = this.state;
+        const {knerrir, pods, events, metrics, sort, filter} = this.state;
         const items = [knerrir];
-
         const filtered = filterControllers(filter, items);
+        const filteredPods = filterByOwners(pods, filtered);
+        const filteredEvents = filterByOwners(events, filteredPods);
+        const filteredMetrics = getMetrics(filteredPods, metrics);        
+
+        
 
         return (
             <div id='content'>
@@ -48,7 +62,9 @@ export default class Knerrirs extends Base {
 
                 <ChartsContainer>
                     <ControllerStatusChart items={filtered} />
-                    <PodStatusChart items={filtered} />
+                    <KnorrPodStatusChart items={filteredPods} />
+                    <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
+                    <PodRamChart items={filteredPods} metrics={filteredMetrics} />                    
                 </ChartsContainer>
 
                 <div className='contentPanel'>
@@ -115,23 +131,6 @@ function ControllerStatusChart({items}) {
     );
 }
 
-function PodStatusChart({items}) {
-    const current = _.sumBy(items, getCurrentCount);
-    const expected = _.sumBy(items, getExpectedCount);
-
-    return (
-        <div className='charts_item'>
-            {items ? (
-                <Chart used={current} pending={expected - current} available={expected} />
-            ) : (
-                <LoadingChart />
-            )}
-            <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
-        </div>
-    );
-}
-
 function Status({item}) {
     const current = getCurrentCount(item);
     const expected = getExpectedCount(item);
@@ -142,11 +141,11 @@ function Status({item}) {
 }
 
 function getCurrentCount({status}) {
-    return status.readyReplicas || status.numberReady || 0;
+    return [status.knorr_names].length || 0;
 }
 
-function getExpectedCount({spec, status}) {
-    return spec.replicas || status.currentNumberScheduled || 0;
+function getExpectedCount({spec}) {
+    return [spec.waybill.loader.configuration.tables].length || 0;
 }
 
 function filterControllers(filter, items) {
