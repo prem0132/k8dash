@@ -1,0 +1,65 @@
+{
+    "apiVersion": "knerrir.hashmapinc.com/v1alpha1",
+    "kind": "ScheduledKnorr",
+    "metadata": {
+        "name": "sql-server-test-beta",
+        "namespace": "knerrir"
+    },
+    "spec": {
+        "concurrencyPolicy": "Allow",
+        "failedRunHistoryLimit": 10,
+        "schedule": "0 2 * * *",
+        "successfulRunHistoryLimit": 10,
+        "template": {
+            "image": "asia.gcr.io/gcp-my-th-it-dev/knorr:alpha",
+            "nodeSelector": {
+                "nodetype": "ingestion-jobs"
+            },
+            "waybill": {
+                "loader": {
+                    "configuration": {
+                        "chunk_size": 100000,
+                        "db": "GALIOM_MUR_LIVE",
+                        "host": "10.8.33.95",
+                        "load_type": "full",
+                        "loader_type": "cursors",
+                        "password": "galiomsa",
+                        "port": 1433,
+                        "tables": [
+                            "AR_CLASS_LINK_T"
+                        ],
+                        "user": "galiom"
+                    },
+                    "system": "mssql"
+                },
+                "unloaders": [
+                    {
+                        "configuration": {
+                            "dataset": "GALIOM_MUR_LIVE",
+                            "location": "asia-southeast1",
+                            "project_id": "gcp-my-th-it-dev",
+                            "table": "AR_CLASS_LINK_T_bq",
+                            "write_type": "overwrite"
+                        },
+                        "system": "bq"
+                    },
+                    {
+                        "configuration": {
+                            "blob_base": "AR_CLASS_LINK_T",
+                            "bucket": "GALIOM_MUR_LIVE",
+                            "location": "asia-southeast1",
+                            "output_type": "csv",
+                            "partition_on": "None",
+                            "project_id": "gcp-my-th-it-dev",
+                            "write_type": "overwrite"
+                        },
+                        "external": {
+                            "create": true
+                        },
+                        "system": "gcs"
+                    }
+                ]
+            }
+        }
+    }
+}

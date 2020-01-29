@@ -31,6 +31,13 @@
     flex: 1;
 }
 
+.editorModal_container {
+    margin: 0px;
+    padding: 10px;
+    flex: 1;
+    overflow: scroll;
+}
+
 @media only screen and (max-width: $media-xsmall) {
     .editorModal {
         width: initial;
