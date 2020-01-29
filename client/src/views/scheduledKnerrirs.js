@@ -104,7 +104,7 @@ function ControllerStatusChart({items}) {
             ) : (
                 <LoadingChart />
             )}
-            <div className='charts_itemLabel'>Workloads</div>
+            <div className='charts_itemLabel'>Scheduled Knerrirs</div>
             <div className='charts_itemSubLabel'>Ready vs Requested</div>
         </div>
     );
@@ -144,7 +144,7 @@ function filterControllers(filter, items) {
 
 function KnerrirStatusChart({items}) {
     const available = items && items.length;
-    const count = _.sumBy(items, x => x.status.knerrir_status.state === 'FAILED' ? 1 : 0); // eslint-disable-line no-confusing-arrow
+    const count = _.sumBy(items, x => x.status.knerrir_status.state === 'COMPLETED' ? 1 : 0); // eslint-disable-line no-confusing-arrow
 
     return (
         <div className='charts_item'>

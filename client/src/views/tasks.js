@@ -6,12 +6,12 @@ import Filter from '../components/filter';
 import {filterByOwners} from '../utils/filterHelper';
 import PodStatusChart from '../components/podStatusChart';
 import {MetadataHeaders, MetadataColumns, TableBody} from '../components/listViewHelpers';
-import {defaultSortInfo} from '../components/sorter';
 import api from '../services/api';
 import test from '../utils/filterHelper';
 import Working from '../components/working';
 import LoadingChart from '../components/loadingChart';
 import ChartsContainer from '../components/chartsContainer';
+import Sorter, {defaultSortInfo} from '../components/sorter';
 
 export default class Tasks extends Base {
     state = {
@@ -63,17 +63,12 @@ export default class Tasks extends Base {
 
                 <div className='contentPanel'>
                     <table>
-                        {/* <thead>
+                        <thead>
                             <tr>
                                 <MetadataHeaders includeNamespace={true} sort={sort}/>
                                 <th><Sorter field={getExpectedCount} sort={sort}>Pods</Sorter></th>
                             </tr>
-                        </thead> */}
-                        <thead>
-                            <tr>
-                                <MetadataHeaders sort={sort} includeNamespace={true} />
-                            </tr>
-                        </thead>                        
+                        </thead>                    
 
                         <TableBody items={filtered} filter={filter} sort={sort} colSpan='5' row={x => (
                             <tr key={x.metadata.uid}>
@@ -82,9 +77,9 @@ export default class Tasks extends Base {
                                     includeNamespace={true}
                                     href={`#!tasks/${x.kind.toLowerCase()}/${x.metadata.namespace}/${x.metadata.name}`}
                                 />
-                                {/* <td>
+                                <td>
                                     <Status item={x} />
-                                </td> */}
+                                </td>
                             </tr>
                         )} />
                     </table>
@@ -128,11 +123,11 @@ function Status({item}) {
 }
 
 function getCurrentCount({status}) {
-    return 1;
+    return status.readyReplicas || status.numberReady || 0;
 }
 
 function getExpectedCount({spec, status}) {
-    return 1;
+    return spec.replicas || status.currentNumberScheduled || 0;
 }
 
 function filterControllers(filter, items) {

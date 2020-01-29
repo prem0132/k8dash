@@ -5,7 +5,7 @@ image:
   registry: asia.gcr.io/gcp-my-th-it-dev
   name: k8sdashboard
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   resources:
     requests:
       cpu: 200m

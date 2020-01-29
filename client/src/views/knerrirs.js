@@ -109,24 +109,18 @@ export default class Knerrirs extends Base {
 }
 
 function ControllerStatusChart({items}) {
-    const workingItems = _.filter(items, (item) => {
-        const current = getCurrentCount(item);
-        const expected = getExpectedCount(item);
-        return current !== expected;
-    });
-
-    const count = items && items.length;
-    const pending = workingItems.length;
+    const available = items && items.length;
+    const count = _.sumBy(items, x => x.status.knerrir_status.state === 'COMPLETED' ? 1 : 0); // eslint-disable-line no-confusing-arrow
 
     return (
         <div className='charts_item'>
             {items ? (
-                <Chart used={count - pending} pending={pending} available={count} />
+                <Chart used={count} pending={available - count} available={available} />
             ) : (
                 <LoadingChart />
             )}
-            <div className='charts_itemLabel'>Workloads</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
+            <div className='charts_itemLabel'>Knerrirs</div>
+            <div className='charts_itemSubLabel'>Completed vs Scheduled</div>
         </div>
     );
 }
@@ -135,17 +129,16 @@ function Status({item}) {
     const current = getCurrentCount(item);
     const expected = getExpectedCount(item);
     const text = `${current} / ${expected}`;
-
     if (current === expected) return <span>{text}</span>;
     return <Working className='contentPanel_warn' text={text} />;
 }
 
 function getCurrentCount({status}) {
-    return [status.knorr_names].length || 0;
+    return status.completedKnorrs.length || 0;
 }
 
 function getExpectedCount({spec}) {
-    return [spec.waybill.loader.configuration.tables].length || 0;
+    return spec.waybill.loader.configuration.tables.length || 0;
 }
 
 function filterControllers(filter, items) {
