@@ -1,0 +1,63 @@
+{
+  "title": "Knerrir Form",
+  "description": "Form for creating Knerrir or Scheduled Knerrir",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "knerrir.hashmapinc.com/v1alpha1"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Knerrir",
+        "ScheduledKnerrir"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "namespace"
+      ]
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "nodeSelector": {
+          "type": "object",
+          "properties": {
+            "nodetype": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nodetype"
+          ]
+        },
+        "waybill": { 
+          "$ref": "#/definitions/waybill"
+         }
+      },
+      "required": [
+        "image",
+        "nodeSelector"
+      ]
+    }
+  },
+  "required": [
+    "metadata",
+    "spec"
+  ]
+}

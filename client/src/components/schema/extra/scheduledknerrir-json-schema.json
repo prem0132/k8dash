@@ -1,0 +1,264 @@
+{
+  "type": "object",
+  "definitions": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "namespace"
+      ]
+    },
+    "waybill": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "loader": {
+          "type": "object",
+          "properties": {
+            "configuration": {
+              "type": "object",
+              "properties": {
+                "chunk_size": {
+                  "type": "integer"
+                },
+                "db": {
+                  "type": "string"
+                },
+                "host": {
+                  "type": "string"
+                },
+                "load_type": {
+                  "type": "string"
+                },
+                "loader_type": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": "integer"
+                },
+                "tables": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "user": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "chunk_size",
+                "db",
+                "host",
+                "load_type",
+                "loader_type",
+                "password",
+                "port",
+                "tables",
+                "user"
+              ]
+            },
+            "system": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "configuration",
+            "system"
+          ]
+        },
+        "unloaders": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "configuration": {
+                  "type": "object",
+                  "properties": {
+                    "dataset": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "project_id": {
+                      "type": "string"
+                    },
+                    "table": {
+                      "type": "string"
+                    },
+                    "write_type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "dataset",
+                    "location",
+                    "project_id",
+                    "table",
+                    "write_type"
+                  ]
+                },
+                "external": {
+                  "type": "object"
+                },
+                "system": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "configuration",
+                "external",
+                "system"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "configuration": {
+                  "type": "object",
+                  "properties": {
+                    "blob_base": {
+                      "type": "string"
+                    },
+                    "bucket": {
+                      "type": "string"
+                    },
+                    "location": {
+                      "type": "string"
+                    },
+                    "output_type": {
+                      "type": "string"
+                    },
+                    "partition_on": {
+                      "type": "string"
+                    },
+                    "project_id": {
+                      "type": "string"
+                    },
+                    "write_type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "blob_base",
+                    "bucket",
+                    "location",
+                    "output_type",
+                    "partition_on",
+                    "project_id",
+                    "write_type"
+                  ]
+                },
+                "external": {
+                  "type": "object",
+                  "properties": {
+                    "create": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "create"
+                  ]
+                },
+                "system": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "configuration",
+                "external",
+                "system"
+              ]
+            }
+          ]
+        }
+      },
+        "required": [
+          "loader",
+          "unloaders"
+        ]
+    }
+  },
+  "properties": {
+    "apiVersion": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "metadata": { 
+      "$ref": "#/definitions/metadata"
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "concurrencyPolicy": {
+          "type": "string"
+        },
+        "failedRunHistoryLimit": {
+          "type": "integer"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "successfulRunHistoryLimit": {
+          "type": "integer"
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "string"
+            },
+            "nodeSelector": {
+              "type": "object",
+              "properties": {
+                "nodetype": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "nodetype"
+              ]
+            },
+            "waybill": { 
+              "$ref": "#/definitions/waybill"
+             }
+          },
+          "required": [
+            "image",
+            "nodeSelector"
+          ]
+        }
+      },
+      "required": [
+        "concurrencyPolicy",
+        "failedRunHistoryLimit",
+        "schedule",
+        "successfulRunHistoryLimit",
+        "template"
+      ]
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ]
+}
