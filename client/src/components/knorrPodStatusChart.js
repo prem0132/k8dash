@@ -3,7 +3,7 @@ import React from 'react';
 import Chart from './chart';
 import LoadingChart from './loadingChart';
 
-export default function PodStatusChart({items}) {
+export default function KnorrPodStatusChart({items}) {
     const available = items && items.length;
     const count = _.sumBy(items, x => x.status.phase === 'Running' || x.status.phase === 'Succeeded' ? 1 : 0); // eslint-disable-line no-confusing-arrow
 
@@ -14,8 +14,8 @@ export default function PodStatusChart({items}) {
             ) : (
                 <LoadingChart />
             )}
-            <div className='charts_itemLabel'>Pods</div>
-            <div className='charts_itemSubLabel'>Ready vs Requested</div>
+            <div className='charts_itemLabel'>Knorrs</div>
+            <div className='charts_itemSubLabel'>Succeeded vs Scheduled</div>
         </div>
     );
 }

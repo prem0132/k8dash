@@ -12,7 +12,7 @@ import Form from 'react-jsonschema-form';
 import '../scss/journal.css'
 
 var fullschema     = require('../components/schema/select-schema');
-var uiSchema     = require('../components/schema/ui-Schema');
+var uiSchema     = require('../components/schema/ui-schema');
 
 export default class KnerrirEditorForm extends Base {
     constructor(props) {

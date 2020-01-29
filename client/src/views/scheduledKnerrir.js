@@ -2,6 +2,8 @@ import React from 'react';
 import Base from '../components/base';
 import ContainersPanel from '../components/containersPanel';
 import PodCpuChart from '../components/podCpuChart';
+import PodRamChart from '../components/podRamChart';
+import KnorrPodStatusChart from '../components/knorrPodStatusChart';
 import DeleteButton from '../components/deleteButton';
 import EventsPanel from '../components/eventsPanel';
 import Field from '../components/field';
@@ -10,13 +12,14 @@ import Loading from '../components/loading';
 import MetadataFields from '../components/metadataFields';
 import KnorrsPanel from '../components/knorrPanel';
 import KnerrirPanel from '../components/knerrirPanel';
-import PodRamChart from '../components/podRamChart';
 import SaveButton from '../components/saveButton';
 import api from '../services/api';
 import getMetrics from '../utils/metricsHelpers';
 import {filterByOwner, filterByOwners} from '../utils/filterHelper';
 import {defaultSortInfo} from '../components/sorter';
 import ChartsContainer from '../components/chartsContainer';
+import Chart from '../components/chart';
+import LoadingChart from '../components/loadingChart';
 
 const service = api.scheduledKnerrir;
 
@@ -64,13 +67,17 @@ export default class ScheduledKnerrir extends Base {
 
                 <ChartsContainer>
                     <div className='charts_item'>
-                        <div className='charts_number'>
-                            {(item && item.status.pastFailedRunNames ) ? item.status.pastFailedRunNames.length : 0}
-                            <span> / </span>
-                            {(item && item.status.pastSuccessfulRunNames ) ? item.status.pastSuccessfulRunNames.length : 0}
-                        </div>
+                        {item ? (
+                            <Chart 
+                            available={(item && item.status.pastSuccessfulRunNames ) ? item.status.pastSuccessfulRunNames.length : 0 + (item && item.status.pastFailedRunNames ) ? item.status.pastFailedRunNames.length : 0 }
+                            used={(item && item.status.pastSuccessfulRunNames ) ? item.status.pastSuccessfulRunNames.length : 0} 
+                            pending={(item && item.status.pastFailedRunNames ) ? item.status.pastFailedRunNames.length : 0} />
+                        ) : (
+                            <LoadingChart />
+                        )}                        
                         <div className='charts_itemLabel'>Failed / Succeeded</div>                        
-                    </div>                   
+                    </div>   
+                    <KnorrPodStatusChart items={filteredPods} />                
                     <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
                     <PodRamChart items={filteredPods} metrics={filteredMetrics} />
                 </ChartsContainer>
@@ -99,7 +106,7 @@ export default class ScheduledKnerrir extends Base {
                     skipNamespace={true}
                 />  
 
-                <div className='contentPanel_header'>Pods</div>
+                <div className='contentPanel_header'>Knorrs</div>
                 <KnorrsPanel
                     items={filteredPods}
                     sort={podsSort}

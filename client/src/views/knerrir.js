@@ -1,3 +1,5 @@
+import _ from 'lodash';
+import KnorrPodStatusChart from '../components/knorrPodStatusChart';
 import React from 'react';
 import Base from '../components/base';
 import ContainersPanel from '../components/containersPanel';
@@ -61,14 +63,7 @@ export default class Knerrir extends Base {
 
 
                 <ChartsContainer>
-                    <div className='charts_item'>
-                        <div className='charts_number'>
-                            {item && (item.status.waybill_names.length || 0)}
-                            <span> / </span>
-                            {item && (item.status.knorr_names.length || 0)}
-                        </div>
-                        <div className='charts_itemLabel'>Waybill / Knorrs</div>
-                    </div>
+                    <KnorrPodStatusChart items={filteredPods} />
                     <PodCpuChart items={filteredPods} metrics={filteredMetrics} />
                     <PodRamChart items={filteredPods} metrics={filteredMetrics} />
                 </ChartsContainer>
@@ -86,7 +81,7 @@ export default class Knerrir extends Base {
                 <ContainersPanel spec={item && item.spec} />
                 <WaybillPanel spec={item && item.spec} />
 
-                <div className='contentPanel_header'>Pods</div>
+                <div className='contentPanel_header'>Knorrs</div>
                 <KnorrPanel
                     items={filteredPods}
                     sort={podsSort}
