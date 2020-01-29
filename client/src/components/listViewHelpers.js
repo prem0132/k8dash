@@ -13,14 +13,6 @@ export function objectMap(items = {}) {
     ));
 }
 
-export function List(items = {}) {
-    return Object.entries(items).map(([key, value]) => (
-        <div key={key}>
-            <span title={value}>{value.length <= 50 ? value : `${value.substr(0, 50)}...`}</span>
-        </div>
-    ));
-}
-
 export function TableBody({items, filter, colSpan, sort, row}) {
     if (items && sort) {
         const {field, direction} = sort;
