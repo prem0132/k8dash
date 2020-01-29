@@ -65,6 +65,7 @@ export default class ScheduledKnerrir extends Base {
                             <tr>
                                 <MetadataHeaders includeNamespace={true} sort={sort}/>
                                 <th><Sorter field={getExpectedCount} sort={sort}>Pods</Sorter></th>
+                                <th><Sorter field={getExpectedCount} sort={sort}>Schedule</Sorter></th>
                             </tr>
                         </thead>
 
@@ -78,6 +79,9 @@ export default class ScheduledKnerrir extends Base {
                                 <td>
                                     <Status item={x} />
                                 </td>
+                                <td>
+                                    { x.spec.schedule }
+                                </td>                                
                             </tr>
                         )} />
                     </table>
